@@ -1,0 +1,38 @@
+[
+    {
+        "description": "Example description",
+        "projectId": "5aa8ce27b07123456e9b91ba",
+        "projectName": "Some cool project",
+        "projectColor": "#03a9f4",
+        "taskId": null,
+        "taskName": null,
+        "clientName": "Awesome client guy",
+        "tagIds": [],
+        "billable": true,
+        "duration": "PT6H58S"
+    },
+    {
+        "description": "Example description",
+        "projectId": "5aa8ce27b07123456e9b91ba",
+        "projectName": "Some cool project",
+        "projectColor": "#03a9f4",
+        "taskId": null,
+        "taskName": null,
+        "clientName": "Awesome client guy",
+        "tagIds": [],
+        "billable": true,
+        "duration": "PT1H"
+    },
+    {
+        "description": "Example description",
+        "projectId": "5aa8ce27b07123456e9b91ba",
+        "projectName": "Some cool project",
+        "projectColor": "#03a9f4",
+        "taskId": null,
+        "taskName": null,
+        "clientName": "Awesome client guy",
+        "tagIds": [],
+        "billable": true,
+        "duration": "PT4H16M"
+    }
+]
