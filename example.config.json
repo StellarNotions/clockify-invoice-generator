@@ -1,0 +1,13 @@
+{
+    "sender": "Elliot Alderson",
+    "receiver": "AllSafe Cybersecurity",
+    "invoiceNumber": 1,
+    "ratePerHour": 0,
+    "name": "Elliot Alderson",
+    "email": "elliot@allsafe.io",
+    "address": "217 East Broadway, New York, NY 10002",
+    "invoicePeriod": "05/22/2020 - 06/07/2020",
+    "notes": "Prices are in CAD",
+    "invoiceDataFilePath": "sampleDataDump.json",
+    "outputFilePath": "AllSafe_Invoice.pdf"
+}
