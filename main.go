@@ -14,6 +14,20 @@ import (
 	"strings"
 )
 
+type configObj struct {
+	Sender string `json:"sender"`
+	Receiver string `json:"receiver"`
+	InvoiceNumber float64 `json:"invoiceNumber"`
+	RatePerHour float64 `json:"ratePerHour"`
+	Name string `json:"name"`
+	Email string `json:"email"`
+	Address string `json:"address"`
+	InvoicePeriod string `json:"invoicePeriod"`
+	Notes string `json:"notes"`
+	InvoiceDataFilePath string `json:"invoiceDataFilePath"`
+	OutPutFilePath string `json:"outputFilePath"`
+}
+
 type clockifyEntry struct {
 	Description string `json:"description"`
 	ProjectName string `json:"projectName"`
@@ -37,36 +51,15 @@ type invoiceRequestData struct {
 
 const INVOICE_GENERATOR_URL = "https://invoice-generator.com"
 
-var sender string
-var receiver string
-var invoiceNumber float64
-var ratePerHour float64
-var note string
+var config configObj
+var clockifyEntries []clockifyEntry
 
 func main() {
-	senderPtr := flag.String("s", "Elliot Alderson", "Name of invoice sender")
-	receiverPtr := flag.String("r", "Allsafe Cybersecurity", "Name of invoice receiver")
-	invoiceNumberPtr := flag.Float64("n", 1, "Invoice number")
-	ratePerHourPtr := flag.Float64("ra", 0, "Rate charged per hour")
-	notePtr := flag.String("no", "Thank you for your business", "Additional note provided at the end of invoice")
-	filepathPtr := flag.String("f", "data.json", "Filepath to JSON file of Clockify entries")
-	outputFileNamePtr := flag.String("o", "invoice.pdf", "Desired name for invoice PDF")
+	configPathPtr := flag.String("c", "config.json", "Config file for personal invoice details")
 	flag.Parse()
 
-	sender = *senderPtr
-	receiver = *receiverPtr
-	invoiceNumber = *invoiceNumberPtr
-	ratePerHour = *ratePerHourPtr
-	note = *notePtr
-
-	jsonFile, err := os.Open(*filepathPtr)
-	check(err)
-	defer jsonFile.Close()
-
-	byteValue, _ := ioutil.ReadAll(jsonFile)
-
-	var clockifyEntries []clockifyEntry
-	json.Unmarshal(byteValue, &clockifyEntries)
+	parseConfigFile(*configPathPtr)
+	parseDataFile(config.InvoiceDataFilePath)
 
 	var invoiceEntries []invoiceEntry
 
@@ -74,7 +67,7 @@ func main() {
 		invoiceEntries = append(invoiceEntries, buildInvoiceEntry(clockifyEntries[i]))
 	}
 	
-	generateInvoice(buildRequestData(invoiceEntries), *outputFileNamePtr)
+	generateInvoice(buildRequestData(invoiceEntries), config.OutPutFilePath)
 }
 
 func check(e error) {
@@ -83,10 +76,28 @@ func check(e error) {
     }
 }
 
+func parseConfigFile(filePath string) {
+	jsonFile, err := os.Open(filePath)
+	check(err)
+	defer jsonFile.Close()
+
+	byteValue, _ := ioutil.ReadAll(jsonFile)
+	json.Unmarshal(byteValue, &config)
+}
+
+func parseDataFile(filePath string) {
+	jsonFile, err := os.Open(filePath)
+	check(err)
+	defer jsonFile.Close()
+
+	byteValue, _ := ioutil.ReadAll(jsonFile)
+	json.Unmarshal(byteValue, &clockifyEntries)
+}
+
 func buildInvoiceEntry(entryData clockifyEntry) invoiceEntry {
 	invoiceEntryName := buildInvoiceEntryName(entryData.ClientName, entryData.ProjectName, entryData.Description)
 	invoiceQuantity := getInvoiceEntryQuantity(entryData.Duration)
-	return invoiceEntry{Name: invoiceEntryName, Quantity: invoiceQuantity, UnitCost: ratePerHour}
+	return invoiceEntry{Name: invoiceEntryName, Quantity: invoiceQuantity, UnitCost: config.RatePerHour}
 }
 
 func buildInvoiceEntryName(clientName string, projectName string, description string) string {
@@ -103,23 +114,22 @@ func getInvoiceEntryQuantity(duration string) float64 {
 		if strings.HasPrefix(match, "P") {
 			continue
 		} else if strings.HasSuffix(match, "H") {
-			hours, _ = strconv.ParseFloat(strings.TrimSuffix(match, "H"), 32)
+			hours, _ = strconv.ParseFloat(strings.TrimSuffix(match, "H"), 64)
 		} else if strings.HasSuffix(match, "M") {
-			minutes, _ = strconv.ParseFloat(strings.TrimSuffix(match, "M"), 32)
+			minutes, _ = strconv.ParseFloat(strings.TrimSuffix(match, "M"), 64)
 		} else if strings.HasSuffix(match, "S") {
-			seconds, _ = strconv.ParseFloat(strings.TrimSuffix(match, "S"), 32)
+			seconds, _ = strconv.ParseFloat(strings.TrimSuffix(match, "S"), 64)
 		}
 	}
 
-	return calculateTotalHours(hours, minutes, seconds)
+	return calculateHours(hours, minutes, seconds)
 }
 
-func calculateTotalHours(numHours float64, numMinutes float64, numSeconds float64) float64 {
-	if numSeconds >= 30 {
+func calculateHours(numHours float64, numMinutes float64, numSeconds float64) float64 {
+	if numSeconds > 0 {
 		numMinutes++
 	}
-
-	return toFixed(numHours+(numMinutes/60), 2)
+	return numHours + toFixed(numMinutes/60, 1)
 }
 
 func round(num float64) int {
@@ -132,12 +142,15 @@ func toFixed(num float64, precision int) float64 {
 }
 
 func buildRequestData(invoiceEntries []invoiceEntry) []byte {
-	requestData := invoiceRequestData {From: sender, To: receiver, Number: invoiceNumber, Items: invoiceEntries, Notes: note}
+	requestData := invoiceRequestData {From: config.Sender, To: config.Receiver, Number: config.InvoiceNumber, Items: invoiceEntries, Notes: buildNotes()}
 
 	bytes, err := json.Marshal(requestData)
 	check(err)
-	
 	return bytes
+}
+
+func buildNotes() string {
+	return fmt.Sprintf("%s\n%s\n%s\n%s\n%s\n", config.Name, config.Email, config.Address, config.InvoicePeriod, config.Notes)
 }
 
 func generateInvoice(requestData []byte, outputFileName string) {
