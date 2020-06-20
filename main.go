@@ -86,13 +86,13 @@ func check(e error) {
 
 // parseConfigFile reads filePath and unmarshals into config type object.
 func parseConfigFile(filePath string) {
-	var bytesFile = getFileAsBytes(filePath)
+	bytesFile := getFileAsBytes(filePath)
 	json.Unmarshal(bytesFile, &config)
 }
 
 // parseDataFile reads filePath and unmarshals into clockifyEntries type object.
 func parseDataFile(filePath string) {
-	var bytesFile = getFileAsBytes(filePath)
+	bytesFile := getFileAsBytes(filePath)
 	json.Unmarshal(bytesFile, &clockifyEntries)
 }
 
