@@ -5,6 +5,7 @@ This tool allows you to use a data dump from Clockify to generate a PDF invoice
 ### Usage
 
 1. Use the provided [example.config.json](example.config.json) file to customize the generated invoice.
+    - Default expected name for this file is `config.json` can be passed a command line argument though using the `-c` flag
 2. Retrieve a data dump of time entries for Clockify by:
     1. Navigating to the [DashBoard](https://clockify.me/dashboard)
     2. Select the invoice date period in the top right hand corner
