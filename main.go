@@ -18,17 +18,17 @@ import (
 
 // configObj used to populate PDF with non-standard values.
 type configObj struct {
-	Sender string `json:"sender"`
-	Receiver string `json:"receiver"`
-	InvoiceNumber float64 `json:"invoiceNumber"`
-	RatePerHour float64 `json:"ratePerHour"`
-	Name string `json:"name"`
-	Email string `json:"email"`
-	Address string `json:"address"`
-	InvoicePeriod string `json:"invoicePeriod"`
-	Notes string `json:"notes"`
-	InvoiceDataFilePath string `json:"invoiceDataFilePath"`
-	OutPutFilePath string `json:"outputFilePath"`
+	Sender              string  `json:"sender"`
+	Receiver            string  `json:"receiver"`
+	InvoiceNumber       float64 `json:"invoiceNumber"`
+	RatePerHour         float64 `json:"ratePerHour"`
+	Name                string  `json:"name"`
+	Email               string  `json:"email"`
+	Address             string  `json:"address"`
+	InvoicePeriod       string  `json:"invoicePeriod"`
+	Notes               string  `json:"notes"`
+	InvoiceDataFilePath string  `json:"invoiceDataFilePath"`
+	OutPutFilePath      string  `json:"outputFilePath"`
 }
 
 // clockifyEntry needed values from Clockify's response data to construct invoiceEntry.
@@ -48,11 +48,11 @@ type invoiceEntry struct {
 
 // invoiceRequestData data being sent to InvoiceGeneratorURL to generate PDF.
 type invoiceRequestData struct {
-	From string `json:"from"`
-	To string `json:"to"`
-	Number float64 `json:"number"`
-	Items []invoiceEntry `json:"items"`
-	Notes string `json:"notes"`
+	From   string         `json:"from"`
+	To     string         `json:"to"`
+	Number float64        `json:"number"`
+	Items  []invoiceEntry `json:"items"`
+	Notes  string         `json:"notes"`
 }
 
 // invoiceGeneratorURL URL invoiceRequestData is sent to, to generate PDF.
@@ -73,15 +73,15 @@ func main() {
 	for i := 0; i < len(clockifyEntries); i++ {
 		invoiceEntries = append(invoiceEntries, buildInvoiceEntry(clockifyEntries[i]))
 	}
-	
+
 	generateInvoice(buildRequestData(invoiceEntries), config.OutPutFilePath)
 }
 
 // check if error is found, panics.
 func check(e error) {
-    if e != nil {
-        panic(e)
-    }
+	if e != nil {
+		panic(e)
+	}
 }
 
 // parseConfigFile reads filePath and unmarshals into config type object.
@@ -166,7 +166,7 @@ func toFixed(num float64, precision int) float64 {
 
 // buildRequestData Builds need JSON object to submit to invoice generater.
 func buildRequestData(invoiceEntries []invoiceEntry) []byte {
-	requestData := invoiceRequestData {From: config.Sender, To: config.Receiver, Number: config.InvoiceNumber, Items: invoiceEntries, Notes: buildNotes()}
+	requestData := invoiceRequestData{From: config.Sender, To: config.Receiver, Number: config.InvoiceNumber, Items: invoiceEntries, Notes: buildNotes()}
 
 	bytes, err := json.Marshal(requestData)
 	check(err)
@@ -190,8 +190,8 @@ func generateInvoice(requestData []byte, outputFileName string) {
 	resp, err := client.Do(req)
 	check(err)
 	defer resp.Body.Close()
-	
-	if (resp.Status == "200 OK") {
+
+	if resp.Status == "200 OK" {
 		body, _ := ioutil.ReadAll(resp.Body)
 		createFile(body, outputFileName)
 	}
